@@ -5,8 +5,13 @@ import { connectDB } from "./src/config/database";
 const PORT = Number(process.env.PORT) || 3000;
 
 // Connect to the database and start the server
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on PORT ${PORT}`);
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on PORT ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Error conectando a la base de datos:", err);
+    process.exit(1);
   });
-});
