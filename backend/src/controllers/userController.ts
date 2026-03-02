@@ -25,6 +25,10 @@ export async function getUsers(
       take: 100,
     });
 
+    if (!users) {
+      return res.status(404).json({ message: "Users not found" });
+    }
+
     res.json(users);
   } catch (error) {
     res.status(500);
