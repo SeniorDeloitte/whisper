@@ -1,15 +1,29 @@
 import express from "express";
+import path from "path";
+import cors from "cors";
+
 import { clerkMiddleware } from "@clerk/express";
-// Import routes
+
 import { authRoutes, chatRoutes, messageRoutes, userRoutes } from "./routes";
+
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
 
-// Parse JSON bodies
-app.use(express.json());
+const allowedOrigins = [
+  "http://localhost:8081", // expo mobile
+  "http://localhost:5173", // vite web devs
+  process.env.FRONTEND_URL!, // production
+].filter(Boolean);
 
-// Apply Clerk middleware to all routes
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true, // allow credentials from client (cookies, authorization headers, etc.)
+  }),
+);
+
+app.use(express.json()); // parses incoming JSON request bodies and makes them available as req.body in your route handlers
 app.use(clerkMiddleware());
 
 app.get("/health", (req, res) => {
@@ -17,11 +31,20 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/message", messageRoutes);
-app.use("/api/user", userRoutes);
+app.use("/api/chats", chatRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/users", userRoutes);
 
-// Error handler middleware
+// error handlers must come after all the routes and other middlewares so they can catch errors passed with next(err) or thrown inside async handlers.
 app.use(errorHandler);
+
+// serve frontend in production
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../../web/dist")));
+
+  app.get("/{*any}", (_, res) => {
+    res.sendFile(path.join(__dirname, "../../web/dist/index.html"));
+  });
+}
 
 export default app;
