@@ -13,16 +13,10 @@ export const protectedRoute = [
       // Get the user ID from the Clerk token
       const { userId: clerkId } = getAuth(req);
 
-      if (!clerkId) {
-        return res
-          .status(401)
-          .json({ message: "Unauthorized - invalid token" });
-      }
-
       // Check if the user exists in the database
       const user = await prisma.user.findUnique({
         where: {
-          clerkId,
+          clerkId: clerkId ?? undefined,
         },
       });
 
