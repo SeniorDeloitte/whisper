@@ -1,6 +1,7 @@
 import { useSSO } from "@clerk/expo";
 import { useState } from "react";
 import { Alert } from "react-native";
+import * as Linking from "expo-linking";
 
 function useAuthSocial() {
   const [loadingStrategy, setLoadingStrategy] = useState<string | null>(null); // loadingStrategy is a string that represents the strategy that is currently being used
@@ -12,7 +13,10 @@ function useAuthSocial() {
     setLoadingStrategy(strategy);
 
     try {
-      const { createdSessionId, setActive } = await startSSOFlow({ strategy });
+      const { createdSessionId, setActive } = await startSSOFlow({ 
+        strategy,
+        redirectUrl: Linking.createURL("/(tabs)"),
+      });
       if (!createdSessionId || !setActive) {
         const provider = strategy === "oauth_google" ? "Google" : "Apple";
         Alert.alert(
