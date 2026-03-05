@@ -7,7 +7,7 @@ export interface AuthRequest extends Request {
 }
 
 export const protectedRoute = [
-  requireAuth,
+  requireAuth(),
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       // Get the user ID from the Clerk token

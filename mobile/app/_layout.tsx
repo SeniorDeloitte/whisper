@@ -33,7 +33,7 @@ export default function RootLayout() {
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
-          <StatusBar style="auto" />
+          <StatusBar style="light" />
           <Stack
             screenOptions={{
               headerShown: false,

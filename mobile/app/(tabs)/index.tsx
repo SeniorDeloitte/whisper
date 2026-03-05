@@ -1,98 +1,105 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import ChatItem from "@/components/ChatItem";
+import EmptyUI from "@/components/EmptyUI";
+import { useChats } from "@/hooks/useChats";
+import { Chat } from "@/types";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const ChatsTab = () => {
+  const router = useRouter();
+  const { data: chats, isLoading, error, refetch } = useChats();
 
-export default function ChatsTab() {
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-surface items-center justify-center">
+        <ActivityIndicator size={"large"} color={"#f4A261"} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 bg-surface items-center justify-center">
+        <Text className="text-red-500 text-3xl">Failed to load chats</Text>
+        <Pressable
+          onPress={() => refetch()}
+          className="mt-4 px-4 py-2 bg-primary rounded-lg"
+        >
+          <Text className="text-foreground">Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const handleChatPress = (chat: Chat) => {
+    router.push({
+      pathname: "/chat/[id]",
+      params: {
+        id: chat._id,
+        participantId: chat.participant._id,
+        name: chat.participant.name,
+        avatar: chat.participant.avatar,
+      },
+    });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View className="flex-1 bg-surface">
+      <FlatList
+        data={chats}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <ChatItem chat={item} onPress={() => handleChatPress(item)} />
+        )}
+        showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 16,
+          paddingBottom: 24,
+        }}
+        ListHeaderComponent={<Header />}
+        ListEmptyComponent={
+          <EmptyUI
+            title="No chats yet"
+            subtitle="Start a conversation!"
+            iconName="chatbubbles-outline"
+            iconColor="#6B6B70"
+            iconSize={64}
+            buttonLabel="New Chat"
+            // @ts-ignore: expo strict types
+            onPressButton={() => router.push("/new-chat")}
+          />
+        }
+      />
+    </View>
+  );
+};
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+export default ChatsTab;
+
+function Header() {
+  const router = useRouter();
+
+  return (
+    <View className="px-5 pt-2 pb-4">
+      <View className="flex-row items-center justify-between">
+        <Text className="text-2xl font-bold text-foreground">Chats</Text>
+        <Pressable
+          className="size-10 bg-primary rounded-full items-center justify-center"
+          // @ts-ignore: expo strict types
+          onPress={() => router.push("/new-chat")}
+        >
+          <Ionicons name="create-outline" size={20} color="#0D0D0F" />
+        </Pressable>
+      </View>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
