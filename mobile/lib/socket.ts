@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import { QueryClient } from "@tanstack/react-query";
 import { Chat, Message, MessageSender } from "@/types";
 
-const SOCKET_URL = "https://whisper-ijeje.sevalla.app";
+const SOCKET_URL = "https://whisper-6kcz.onrender.com";
 
 interface SocketState {
   socket: Socket | null;
