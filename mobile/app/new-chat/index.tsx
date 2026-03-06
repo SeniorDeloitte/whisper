@@ -28,28 +28,35 @@ const NewChatScreen = () => {
   const users = allUsers?.filter((u) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
-    return (
-      u.name?.toLowerCase().includes(query) ||
-      u.email?.toLowerCase().includes(query)
-    );
+
+    const nameMatch = u.name ? u.name.toLowerCase().includes(query) : false;
+    const emailMatch = u.email ? u.email.toLowerCase().includes(query) : false;
+
+    return nameMatch || emailMatch;
   });
 
   const handleUserSelect = (user: User) => {
-    getOrCreateChat(user._id, {
+    console.log("Selected user:", user);
+
+    getOrCreateChat(user.id, {
       onSuccess: (chat) => {
+        console.log("Chat created/fetched successfully!", chat.id);
         router.dismiss(); // go -1
 
         setTimeout(() => {
           router.push({
             pathname: "/chat/[id]",
             params: {
-              id: chat._id,
-              participantId: chat.participant._id,
+              id: chat.id,
+              participantId: chat.participant.id,
               name: chat.participant.name,
               avatar: chat.participant.avatar,
             },
           });
         }, 100);
+      },
+      onError: (error) => {
+        console.error("Error creating chat:", error);
       },
     });
   };
@@ -119,9 +126,9 @@ const NewChatScreen = () => {
                 </Text>
                 {users.map((user) => (
                   <UserItem
-                    key={user._id}
+                    key={user.id}
                     user={user}
-                    isOnline={onlineUsers.has(user._id)}
+                    isOnline={onlineUsers.has(user.id)}
                     onPress={() => handleUserSelect(user)}
                   />
                 ))}

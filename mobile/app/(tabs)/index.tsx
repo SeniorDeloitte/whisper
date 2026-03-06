@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ChatsTab = () => {
   const router = useRouter();
@@ -42,8 +43,8 @@ const ChatsTab = () => {
     router.push({
       pathname: "/chat/[id]",
       params: {
-        id: chat._id,
-        participantId: chat.participant._id,
+        id: chat.id,
+        participantId: chat.participant.id,
         name: chat.participant.name,
         avatar: chat.participant.avatar,
       },
@@ -51,10 +52,10 @@ const ChatsTab = () => {
   };
 
   return (
-    <View className="flex-1 bg-surface">
+    <SafeAreaView edges={["top"]} className="flex-1 bg-surface">
       <FlatList
         data={chats}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <ChatItem chat={item} onPress={() => handleChatPress(item)} />
         )}
@@ -74,12 +75,11 @@ const ChatsTab = () => {
             iconColor="#6B6B70"
             iconSize={64}
             buttonLabel="New Chat"
-            // @ts-ignore: expo strict types
             onPressButton={() => router.push("/new-chat")}
           />
         }
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -94,7 +94,6 @@ function Header() {
         <Text className="text-2xl font-bold text-foreground">Chats</Text>
         <Pressable
           className="size-10 bg-primary rounded-full items-center justify-center"
-          // @ts-ignore: expo strict types
           onPress={() => router.push("/new-chat")}
         >
           <Ionicons name="create-outline" size={20} color="#0D0D0F" />

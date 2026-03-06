@@ -73,26 +73,26 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     });
 
     socket.on("new-message", (message: Message) => {
-      const senderId = (message.sender as MessageSender)._id;
+      const senderId = (message.sender as MessageSender).id;
       const { currentChatId } = get();
 
       // add message to the chat's message list, replacing optimistic messages
       queryClient.setQueryData<Message[]>(["messages", message.chat], (old) => {
         if (!old) return [message];
         // remove any optimistic messages (temp IDs) and add the real one
-        const filtered = old.filter((m) => !m._id.startsWith("temp-"));
-        if (filtered.some((m) => m._id === message._id)) return filtered;
+        const filtered = old.filter((m) => !m.id.startsWith("temp-"));
+        if (filtered.some((m) => m.id === message.id)) return filtered;
         return [...filtered, message];
       });
 
       // Update chat's lastMessage directly for instant UI update
       queryClient.setQueryData<Chat[]>(["chats"], (oldChats) => {
         return oldChats?.map((chat) => {
-          if (chat._id === message.chat) {
+          if (chat.id === message.chat) {
             return {
               ...chat,
               lastMessage: {
-                _id: message._id,
+                id: message.id,
                 text: message.text,
                 sender: senderId,
                 createdAt: message.createdAt,
@@ -107,8 +107,8 @@ export const useSocketStore = create<SocketState>((set, get) => ({
       // mark as unread if not currently viewing this chat and message is from other user
       if (currentChatId !== message.chat) {
         const chats = queryClient.getQueryData<Chat[]>(["chats"]);
-        const chat = chats?.find((c) => c._id === message.chat);
-        if (chat?.participant && senderId === chat.participant._id) {
+        const chat = chats?.find((c) => c.id === message.chat);
+        if (chat?.participant && senderId === chat.participant.id) {
           set((state) => ({
             unreadChats: new Set([...state.unreadChats, message.chat]),
           }));
@@ -180,7 +180,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     // optimistic updates
     const tempId = `temp-${Date.now()}`;
     const optimisticMessage: Message = {
-      _id: tempId,
+      id: tempId,
       chat: chatId,
       sender: currentUser,
       text,
@@ -199,7 +199,7 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     const errorHandler = (error: { message: string }) => {
       queryClient.setQueryData<Message[]>(["messages", chatId], (old) => {
         if (!old) return [];
-        return old.filter((m) => m._id !== tempId);
+        return old.filter((m) => m.id !== tempId);
       });
       socket.off("socket-error", errorHandler);
     };

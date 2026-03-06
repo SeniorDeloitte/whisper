@@ -9,9 +9,9 @@ const ChatItem = ({ chat, onPress }: { chat: Chat; onPress: () => void }) => {
 
   const { onlineUsers, typingUsers, unreadChats } = useSocketStore();
 
-  const isOnline = onlineUsers.has(participant._id);
-  const isTyping = typingUsers.get(chat._id) === participant._id;
-  const hasUnread = unreadChats.has(chat._id);
+  const isOnline = onlineUsers.has(participant.id);
+  const isTyping = typingUsers.get(chat.id) === participant.id;
+  const hasUnread = unreadChats.has(chat.id);
 
   return (
     <Pressable

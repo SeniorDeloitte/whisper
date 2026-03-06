@@ -119,7 +119,7 @@ const ChatDetailScreen = () => {
 
     setIsSending(true);
     sendMessage(chatId, messageText.trim(), {
-      _id: currentUser._id,
+      id: currentUser.id,
       name: currentUser.name,
       email: currentUser.email,
       avatar: currentUser.avatar,
@@ -203,14 +203,14 @@ const ChatDetailScreen = () => {
               }}
             >
               {messages.map((message) => {
-                const senderId = (message.sender as MessageSender)._id;
+                const senderId = (message.sender as MessageSender).id;
                 const isFromMe = currentUser
-                  ? senderId === currentUser._id
+                  ? senderId === currentUser.id
                   : false;
 
                 return (
                   <MessageBubble
-                    key={message._id}
+                    key={message.id}
                     message={message}
                     isFromMe={isFromMe}
                   />
